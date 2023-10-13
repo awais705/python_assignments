@@ -1,0 +1,146 @@
+USE hr_db;
+
+# Write a query to find the name (first_name, last_name) and the salary of the employees who have a higher salary 
+#than the employee whose last_name='Bull'.
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.SALARY  as Salary FROM employees emp WHERE emp.LAST_NAME NOT IN (SELECT LAST_NAME FROM employees ep WHERE ep.LAST_NAME = "Bull" ) ORDER BY emp.SALARY DESC;
+
+# Write a query to find the name (first_name, last_name) of all employees who works in the IT department.
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name" from employees emp WHERE emp.DEPARTMENT_ID = (SELECT DEPARTMENT_ID FROM departments WHERE DEPARTMENT_NAME = "IT");
+
+# Write a query to find the first_name, last_name of the employees who are working in a USA based department.
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.DEPARTMENT_ID 
+FROM employees emp
+WHERE emp.DEPARTMENT_ID IN 
+(SELECT dep.DEPARTMENT_ID FROM departments as dep  
+WHERE dep.LOCATION_ID IN (SELECT loc.LOCATION_ID FROM locations as loc WHERE loc.COUNTRY_ID = "US" )
+) ;
+
+# display all the managers name
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.EMPLOYEE_ID
+FROM 
+employees emp
+WHERE emp.EMPLOYEE_ID IN (SELECT group_concat(ep.MANAGER_ID) FROM employees ep GROUP BY ep.MANAGER_ID) ;
+
+
+# Write a query to find the name (first_name, last_name), and salary of the employees whose salary is greater than the average salary.
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.SALARY 
+FROM 
+employees emp 
+WHERE SALARY > (SELECT AVG(ep.SALARY) AS avg_salary FROM employees ep);
+
+# Write a query to find the name (first_name, last_name), and salary of the employees 
+#whose salary is equal to the minimum salary
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.SALARY 
+FROM 
+employees emp 
+WHERE SALARY = (SELECT MIN(ep.SALARY) AS avg_salary FROM employees ep); 
+
+
+# Write a query to find the name (first_name, last_name), and salary of the employees who earns more than the average
+#salary and works in any of the IT departments.
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.SALARY 
+FROM 
+employees emp 
+WHERE 
+emp.SALARY > (SELECT AVG(SALARY) FROM employees) 
+AND
+emp.DEPARTMENT_ID = (SELECT DEPARTMENT_ID FROM departments WHERE DEPARTMENT_NAME = "IT");
+
+# Write a query to find the name (first_name, last_name), and salary of the employees who earns more than the earning of Mr. Bell.
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.SALARY 
+FROM 
+employees emp 
+WHERE 
+emp.SALARY > (SELECT SALARY FROM employees WHERE LAST_NAME = "Bell");
+
+
+# Write a query to find the name (first_name, last_name), and salary of the employees who are earning the
+# same salary as the minimum salary of all staff.
+
+SELECT CONCAT(emp.FIRST_NAME," ",emp.LAST_NAME) AS "Name", emp.SALARY 
+FROM 
+employees emp 
+WHERE SALARY = (SELECT MIN(ep.SALARY) AS min_salary FROM employees ep); 
+
+# Write a query to select last 10 records from a table
+SELECT * FROM (SELECT * FROM employees order by  EMPLOYEE_ID DESC  LIMIT 10) as mytable order by EMPLOYEE_ID  ;
+
+
+#  Write a query to list the department ID and name of all the departments where no employee is working.
+SELECT dp.DEPARTMENT_ID, dp.DEPARTMENT_NAME 
+FROM
+departments as dp
+WHERE dp.DEPARTMENT_ID not in (SELECT DEPARTMENT_ID FROM employees;
+
+
+# Write a query to get the first name and 
+#hire date from employees table where hire date between '1987-06-01' and '1987-07-30'
+SELECT FIRST_NAME, HIRE_DATE FROM employees WHERE DATE(HIRE_DATE) BETWEEN DATE('1987-06-01') AND DATE('1987-07-30');
+
+# Write a query to get first name of employees who joined in 1987.
+SELECT FIRST_NAME FROM employees WHERE year(HIRE_DATE) = "1987";
+
+
+# Write a query to get the firstname, lastname who joined in the month of June.
+SELECT FIRST_NAME,LAST_NAME,HIRE_DATE FROM employees WHERE MONTH(HIRE_DATE) = 6;
+
+
+# Write a query to get the years in which more than 10 employees joined.
+SELECT DISTINCT(YEAR(emp.HIRE_DATE)) as y_hire
+ FROM employees as emp 
+ WHERE 
+ (SELECT COUNT(HIRE_DATE) FROM employees group by YEAR(HIRE_DATE)) ;
+
+# Write a query to get department name, manager name, and salary of the manager for
+#all managers whose experience is more than 5 years.
+
+# Fetch the NUMBER of jobs the company have using table employees
+SELECT SUM(EMPLOYEE_ID) AS TOTAL_JOBS FROM employees;
+
+# Write down the query to show how much company spend on salaries. display the count
+SELECT SUM(SALARY) AS TOTAL_SALARIES FROM employees;
+
+# Write down the query to display the minimum salary that a company is giving. display the count
+SELECT MIN(SALARY) AS min_salary FROM employees;
+
+# Write down the query to display the maximum salary that a company is giving. display the count
+SELECT MAX(SALARY) AS max_salary FROM employees;
+
+# Write a query to get the highest, lowest, sum, and average salary of all employees.
+SELECT MAX(SALARY)as max_salary,MIN(SALARY) as min_salary,SUM(SALARY) as total_salary,AVG(SALARY) as avg_salary FROM employees ;
+
+
+# Write down the query to display the maximum salary that a company is giving in the department IT_PROG
+SELECT MAX(emp.SALARY) AS "MAX_SALARY" FROM employees emp WHERE emp.DEPARTMENT_ID IN (SELECT DEPARTMENT_ID FROM departments WHERE DEPARTMENT_NAME = "Sales");
+
+# Write a query to get the number of employees with the same job.
+SELECT COUNT(emp.JOB_ID) TOTAL_JOBS,(SELECT JOB_TITLE FROM jobs WHERE JOB_ID = emp.JOB_ID ) FROM employees as emp group by emp.JOB_ID  ORDER BY TOTAL_JOBS DESC;
+
+# list down the lowest salary of the employee of every manager and also display the manager_id.
+SELECT MIN(emp.SALARY) as lowest_salary, emp.MANAGER_ID AS manager_id  FROM employees as emp GROUP BY emp.MANAGER_ID order by lowest_salary ;
+
+# list down the total salaries of every deparment
+SELECT SUM(emp.SALARY) as total_salaries, (SELECT DEPARTMENT_NAME FROM departments WHERE DEPARTMENT_ID = emp.DEPARTMENT_ID) AS "Department Name" FROM employees as emp group by emp.DEPARTMENT_ID order by total_salaries DESC;
+
+
+# list down the average salaries of every department exluding IT Deparment
+SELECT round(AVG(emp.SALARY)), (SELECT DEPARTMENT_NAME FROM departments WHERE DEPARTMENT_ID = emp.DEPARTMENT_ID) AS "Dept Name"  FROM employees as emp WHERE DEPARTMENT_ID IN (SELECT DEPARTMENT_ID FROM departments WHERE DEPARTMENT_NAME != 'IT') GROUP BY DEPARTMENT_ID;
+
+# fetch the top 3 department who is taking the highest salary among all other deparment
+SELECT SUM(emp.SALARY) AS total_salary, (SELECT DEPARTMENT_NAME FROM departments WHERE DEPARTMENT_ID = emp.DEPARTMENT_ID) AS "Dept Name" FROM employees as emp GROUP BY emp.DEPARTMENT_ID ORDER BY total_salary DESC LIMIT 3;
+
+
+# list down all the department (job_id) whose avg salary is more than overall avg salary of the whole company
+SELECT emp.DEPARTMENT_ID,avg(emp.SALARY) as DEPT_ID FROM employees emp WHERE (SELECT AVG(emp.SALARY) AS avg_sal FROM employees) > (SELECT AVG(SALARY) FROM employees ) group by emp.DEPARTMENT_ID;
+
+# Write a query to get employee ID, last name, and date of first salary of the employees.
+SELECT emp.EMPLOYEE_ID, emp.LAST_NAME, DATE_ADD(emp.HIRE_DATE, Interval 1 MONTH) AS "DATE OF FIRST SALARY" FROM employees emp;
+
+# find the department that contains more than 10 employees
+-- SELECT dp.DEPARTMENT_NAME FROM departments as dp WHERE (SELECT COUNT(emp.DEPARTMENT_ID) FROM employees WHERE emp.DEPARTMENT_ID =  dp.DEPARTMENT_ID ) > 10;
+SELECT emp.DEPARTMENT_ID FROM employees as emp WHERE (SELECT COUNT(DEPARTMENT_ID) AS total_employee FROM employees WHERE DEPARTMENT_ID = emp.DEPARTMENT_ID) > 10 GROUP BY emp.DEPARTMENT_ID  ;
+
+
+
+
+
